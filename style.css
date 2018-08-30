@@ -1,0 +1,28 @@
+body {
+    margin: 0;
+}
+body > div {
+    position: fixed;
+    top: 0;
+    width: 50vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.output {
+    right: 0;
+}
+h1 {
+    text-align: center;
+    flex-grow: 0;
+}
+#camera, #out {
+    flex-grow: 1;
+    width: 100%;
+}
+.tmp {
+    display: none;
+}
+video {
+    object-fit: fill;
+}
