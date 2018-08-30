@@ -1,17 +1,18 @@
 "use strict";
 
-var ctx;
-var tmp;
-
 var convolutionMatrix = [
     [ -1, -2, -1 ],
     [ -2, 12, -2 ],
     [ -1, -2, -1 ]
 ];
-var convolutionSize = convolutionMatrix.length;
-var halfConvolutionSize = (convolutionSize - 1) / 2;
 var w = 640;
 var h = 480;
+var threshold = 15;
+
+var ctx;
+var tmp;
+var convolutionSize = convolutionMatrix.length;
+var halfConvolutionSize = (convolutionSize - 1) / 2;
 
 function frame(data) {
     var image = new Image();
@@ -63,9 +64,18 @@ function frame(data) {
                 } else if (b > 255) {
                     b = 255;
                 }
-                pix[i] = r;
-                pix[i + 1] = g;
-                pix[i + 2] = b;
+                var d = Math.floor(Math.sqrt(r * r + g * g + b * b));
+                if (d > 255) {
+                    d = 255;
+                }
+                if (d > threshold) {
+                    d = 255;
+                } else {
+                    d = 0;
+                }
+                pix[i] = d;
+                pix[i + 1] = d;
+                pix[i + 2] = d;
             }
         }
         ctx.putImageData(imgd, 0, 0);
