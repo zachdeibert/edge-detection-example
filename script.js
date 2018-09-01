@@ -8,19 +8,28 @@ var convolutionMatrix = [
 var w = 640;
 var h = 480;
 var threshold = 15;
+var cleanupFrames = 3;
 
 var ctx;
 var tmp;
 var convolutionSize = convolutionMatrix.length;
 var halfConvolutionSize = (convolutionSize - 1) / 2;
+var cleanupBuffer = [];
 
 function frame(data) {
     var image = new Image();
     image.onload = function() {
-        tmp.drawImage(image, 0, 0, w, h);
-        var src = tmp.getImageData(0, 0, w, h).data;
+        cleanupBuffer[cleanupBuffer.length - 1].ctx.drawImage(image, 0, 0, w, h);
+        tmp.globalAlpha = 1;
+        tmp.fillStyle = "#000000";
+        tmp.fillRect(0, 0, w, h);
+        tmp.globalAlpha = 1 / cleanupFrames;
+        for (var i = 0; i < cleanupBuffer.length; ++i) {
+            tmp.drawImage(cleanupBuffer[i].e, 0, 0);
+        }
         var imgd = tmp.getImageData(0, 0, w, h);
         var pix = imgd.data;
+        var src = new Uint8ClampedArray(pix);
         for (var x = 0; x < w; ++x) {
             for (var y = 0; y < h; ++y) {
                 var i = 4 * (x + w * y);
@@ -79,6 +88,7 @@ function frame(data) {
             }
         }
         ctx.putImageData(imgd, 0, 0);
+        cleanupBuffer.push(cleanupBuffer.splice(0, 1)[0]);
         Webcam.snap(frame);
     };
     image.src = data;
@@ -94,6 +104,16 @@ function load() {
     tmp = e.getContext("2d");
     e.width = w;
     e.height = h;
+    for (var i = 0; i < cleanupFrames; ++i) {
+        var canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        e.parentElement.appendChild(canvas);
+        cleanupBuffer.push({
+            "e": canvas,
+            "ctx": canvas.getContext("2d")
+        });
+    }
     Webcam.on("live", function() {
         Webcam.snap(frame);
     });
